@@ -82,9 +82,9 @@
                 // TODO: Format the results
 
                 let htmlData = `<div class="data-container">
-                                <div class="city"><h1>City: ${results.city.name}</h1></div>
-                                <div class="temp"><h2>Temperature: ${results.list[3].main.temp} Kelvin</h2></div>
-                                <div class="weather"><h2>Weather: ${results.list[3].weather[0].main}</h2></div>
+                                <div class="data city"><h1>City: ${results.city.name}</h1></div>
+                                <div class="data temp"><h2>Temperature: ${results.list[3].main.temp} Kelvin</h2></div>
+                                <div class="data weather"><h2>Weather: ${results.list[3].weather[0].main}</h2></div>
                                 </div>`
                 this.testResults.innerHTML = (htmlData || '');
                 //Rob: got rid of the .toString(); and used JSON.stringify instead to display the object on the DOM
@@ -93,9 +93,28 @@
     </script>
 
     <style>
+
         .data-container {
-            text-align:center;
+            height: 25rem;
+            text-align: center;
         }
+
+        .data-container > .data {
+            height: 33.3%;
+        }
+
+        .city {
+            animation: fade-in 1s ease;
+        }
+
+        .temp {
+            animation: fade-in 2s ease;
+        }
+
+        .weather {
+            animation: fade-in 3s ease;
+        }
+
         .button-container {
             text-align: center;
         }
@@ -117,6 +136,17 @@
 
         .button-container > button:active {
             background-color: #006000;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: scale(0)
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
         }
     </style>
 
