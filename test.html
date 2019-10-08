@@ -58,16 +58,46 @@
                 console.log(new Date().toISOString(), '[Test]', 'Running the test');
 
                 // TODO: Make the API call and handle the results
+                var options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                };
 
-                axios({
-                    method: 'get',
-                    url: 'https://api.openweathermap.org/data/2.5/forecast?zip=37027,us&APPID=25e989bd41e3e24ce13173d8126e0fd6'
-                })
-                .then(response=> {
-                    this.setResults(response.data);
-                }).catch(err=>{
-                    this.setError(err)
-                })
+                function success(pos) {
+                    var crd = pos.coords;
+
+                    console.log('Your current position is:');
+                    console.log(`Latitude : ${crd.latitude}`);
+                    console.log(`Longitude: ${crd.longitude}`);
+                    console.log(`More or less ${crd.accuracy} meters.`);
+                }
+
+                function error() {
+                    // console.warn(`ERROR(${err.code}): ${err.message}`);
+                    axios({
+                        method: 'get',
+                        url: 'https://api.openweathermap.org/data/2.5/forecast?zip=37027,us&APPID=25e989bd41e3e24ce13173d8126e0fd6'
+                    })
+                    .then(response=> {
+                        console.log(response.data)
+                        this.setResults(response.data);
+                    }).catch(error=>{
+                        console.log(error)
+                        this.setError(error)
+                    })
+                }
+
+                navigator.geolocation.getCurrentPosition(success, error, options);
+                // axios({
+                //     method: 'get',
+                //     url: 'https://api.openweathermap.org/data/2.5/forecast?zip=37027,us&APPID=25e989bd41e3e24ce13173d8126e0fd6'
+                // })
+                // .then(response=> {
+                //     this.setResults(response.data);
+                // }).catch(err=>{
+                //     this.setError(err)
+                // })
             }
 
             setError(message) {
@@ -80,14 +110,24 @@
             setResults(results) {
                 console.log(results)
                 // TODO: Format the results
-
                 let htmlData = `<div class="data-container">
                                 <div class="data city"><h1>City: ${results.city.name}</h1></div>
-                                <div class="data temp"><h2>Temperature: ${results.list[3].main.temp} Kelvin</h2></div>
-                                <div class="data weather"><h2>Weather: ${results.list[3].weather[0].main}</h2></div>
+                                <div class="data temp"><h2>Temperature: ${results.list[0].main.temp} Kelvin</h2></div>
+                                <div class="data weather"><h2>Weather: ${results.list[0].weather[0].main}</h2></div>
                                 </div>`
                 this.testResults.innerHTML = (htmlData || '');
                 //Rob: got rid of the .toString(); and used JSON.stringify instead to display the object on the DOM
+                
+                if (results.list[0].weather[0].description.includes('cloud')) {
+                    document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/209831/pexels-photo-209831.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260")'
+                } else if (results.list[0].weather[0].description.includes('snow')) {
+                    document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/839462/pexels-photo-839462.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260")'
+                } else if (results.list[0].weather[0].description.includes('storm')) {
+                    document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/53459/lightning-storm-weather-sky-53459.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
+                } else {
+                    document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/3768/sky-sunny-clouds-cloudy.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
+                }
+                
             }
         }
     </script>
@@ -95,24 +135,39 @@
     <style>
 
         .data-container {
+            padding-top: 1rem;
+            margin:auto;
+            margin-top: 15%;
             height: 25rem;
+            width: 33.3%;
+            text-align: center;
+            animation: fade-in 1s ease;
+            border-radius: 15px;
+            box-shadow: 1px 1px 5px 1px black;
+        }
+        .data-container > .data {
+            height: 33.3%;
+            margin: auto;
             text-align: center;
         }
 
-        .data-container > .data {
-            height: 33.3%;
+        .data-container > .data * {
+            margin:auto;
+            margin-top: 1rem;
+            width: fit-content;
+            background-color: white;
+            box-shadow: 1px 1px 5px 1px black;
+            border-radius: 5px;
         }
 
         .city {
-            animation: fade-in 1s ease;
+            animation: fade-in-and-scale 1s ease;
         }
-
         .temp {
-            animation: fade-in 2s ease;
+            animation: fade-in-and-scale 2s ease;
         }
-
         .weather {
-            animation: fade-in 3s ease;
+            animation: fade-in-and-scale 3s ease;
         }
 
         .button-container {
@@ -138,7 +193,7 @@
             background-color: #006000;
         }
 
-        @keyframes fade-in {
+        @keyframes fade-in-and-scale {
             0% {
                 opacity: 0;
                 transform: scale(0)
@@ -146,6 +201,14 @@
             100% {
                 opacity: 1;
                 transform: scale(1)
+            }
+        }
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
             }
         }
     </style>
