@@ -58,50 +58,25 @@
                 console.log(new Date().toISOString(), '[Test]', 'Running the test');
 
                 // TODO: Make the API call and handle the results
-                var options = {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                };
 
-                function success(pos) {
-                    var crd = pos.coords;
 
-                    console.log('Your current position is:');
-                    console.log(`Latitude : ${crd.latitude}`);
-                    console.log(`Longitude: ${crd.longitude}`);
-                    console.log(`More or less ${crd.accuracy} meters.`);
-                }
-
-                function error() {
-                    // console.warn(`ERROR(${err.code}): ${err.message}`);
-                    axios({
-                        method: 'get',
-                        url: 'https://api.openweathermap.org/data/2.5/forecast?zip=37027,us&APPID=25e989bd41e3e24ce13173d8126e0fd6'
-                    })
-                    .then(response=> {
-                        console.log(response.data)
-                        this.setResults(response.data);
-                    }).catch(error=>{
-                        console.log(error)
-                        this.setError(error)
-                    })
-                }
-
-                navigator.geolocation.getCurrentPosition(success, error, options);
-                // axios({
-                //     method: 'get',
-                //     url: 'https://api.openweathermap.org/data/2.5/forecast?zip=37027,us&APPID=25e989bd41e3e24ce13173d8126e0fd6'
-                // })
-                // .then(response=> {
-                //     this.setResults(response.data);
-                // }).catch(err=>{
-                //     this.setError(err)
-                // })
+                let currentPos = JSON.parse(localStorage.getItem("currentPosition"));
+                let appUrl = currentPos? `https://api.openweathermap.org/data/2.5/weather?lat=${currentPos.latitude}&lon=${currentPos.longitude}&APPID=25e989bd41e3e24ce13173d8126e0fd6`: "https://api.openweathermap.org/data/2.5/weather?q=brentwood,us&APPID=25e989bd41e3e24ce13173d8126e0fd6"
+                axios({
+                    method: 'get',
+                    url: appUrl
+                })
+                .then(response=> {
+                    console.log(response)
+                    this.setResults(response.data);
+                    localStorage.clear("currentPosition");
+                }).catch(err=>{
+                    this.setError(err)
+                })
             }
 
             setError(message) {
-                console.log(message)
+                console.log(message);
                 // TODO: Format the error
                 let errorText = `Uh oh! Looks like we had an error retrieving your weather data. Here is the error: ${message}`
                 this.testResults.innerHTML = (errorText || '').toString();
@@ -110,19 +85,23 @@
             setResults(results) {
                 console.log(results)
                 // TODO: Format the results
+                let temp = ((results.main.temp-273.15)*1.8+32).toFixed(2);
+
                 let htmlData = `<div class="data-container">
-                                <div class="data city"><h1>City: ${results.city.name}</h1></div>
-                                <div class="data temp"><h2>Temperature: ${results.list[0].main.temp} Kelvin</h2></div>
-                                <div class="data weather"><h2>Weather: ${results.list[0].weather[0].main}</h2></div>
+                                <div class="data city"><h1>City: ${results.name? results.name: "Brentwood"}</h1></div>
+                                <div class="data temp"><h2>Temperature: ${temp} Fahrenheit</h2></div>
+                                <div class="data weather"><h2>Weather: ${results.weather[0].main}</h2></div>
                                 </div>`
                 this.testResults.innerHTML = (htmlData || '');
                 //Rob: got rid of the .toString(); and used JSON.stringify instead to display the object on the DOM
                 
-                if (results.list[0].weather[0].description.includes('cloud')) {
+                if (results.weather[0].description.includes('cloud')) {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/209831/pexels-photo-209831.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260")'
-                } else if (results.list[0].weather[0].description.includes('snow')) {
+                } else if (results.weather[0].description.includes('snow')) {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/839462/pexels-photo-839462.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260")'
-                } else if (results.list[0].weather[0].description.includes('storm')) {
+                } else if (results.weather[0].description.includes('storm')) {
+                    document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/53459/lightning-storm-weather-sky-53459.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
+                } else if (results.weather[0].description.includes('rain')) {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/53459/lightning-storm-weather-sky-53459.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
                 } else {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/3768/sky-sunny-clouds-cloudy.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
@@ -235,7 +214,7 @@
             let testButton = document.createElement('button');
 
             testButton.type = 'button';
-            testButton.innerText = 'Get the Brentwood Weather';
+            testButton.innerText = 'Get Your Current Weather!';
             //Rob: felt like Brentwood was more accurate than Nashville
             testButton.onclick = () => test.run();
 
@@ -249,6 +228,32 @@
         const buttonContainer = document.getElementsByClassName('button-container')[0];
 
         addButtonForTest(buttonContainer, test);
+
+        let options = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        };
+
+        function success(pos) {
+            let crd = {
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude
+            }
+            console.log('Your current position is:');
+            console.log(`Latitude : ${crd.latitude}`);
+            console.log(`Longitude: ${crd.longitude}`);
+            // console.log(`More or less ${crd.accuracy} meters.`);
+            localStorage.setItem("currentPosition", JSON.stringify(crd));
+        }
+
+        function error(err) {
+            console.warn(`ERROR(${err.code}): ${err.message}`);
+            // localStorage.setItem("currentPosition", JSON.stringify({city: "Brentwood"}))
+        }
+
+
+        navigator.geolocation.getCurrentPosition(success, error, options);
 
     </script>
 </body>
