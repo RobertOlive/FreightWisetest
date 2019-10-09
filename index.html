@@ -80,7 +80,7 @@
             }
 
             setError(message) {
-                console.log(message);
+
                 // TODO: Format the error
                 let errorText = `<div class="data-container">
                                     <div class="data">
@@ -93,7 +93,7 @@
             }
 
             setResults(results) {
-                console.log(results)
+
                 // TODO: Format the results
                 let temp = ((results.main.temp-273.15)*1.8+32).toFixed(2);
                 //Rob converting Kelvin to Fahrenheit
@@ -274,6 +274,7 @@
 
 
         navigator.geolocation.getCurrentPosition(success, error, options);
+        console.log("Dear Hiring Manager/Senior Dev/Whoever, thanks for taking a look at my coding test. If all is going to plan, the page should ask for your location then show either your weather or Brentwood's depending on what you chose. If you have any questions, my contact info is on my github as well as in my application. Thanks! - Rob")
 
     </script>
 </body>
