@@ -60,16 +60,20 @@
                 // TODO: Make the API call and handle the results
 
 
+                //Rob: I'm setting geolocation data to localstorage below (line 233) on page load. In the future this would allow a user to not always have to give their location if desired.
+
                 let currentPos = JSON.parse(localStorage.getItem("currentPosition"));
+
                 let appUrl = currentPos? `https://api.openweathermap.org/data/2.5/weather?lat=${currentPos.latitude}&lon=${currentPos.longitude}&APPID=25e989bd41e3e24ce13173d8126e0fd6`: "https://api.openweathermap.org/data/2.5/weather?q=brentwood,us&APPID=25e989bd41e3e24ce13173d8126e0fd6"
+                //Rob: If the user gives their location, use it for the axios call. If not, use Brentwood's location.
+
                 axios({
                     method: 'get',
                     url: appUrl
                 })
                 .then(response=> {
-                    console.log(response)
                     this.setResults(response.data);
-                    localStorage.clear("currentPosition");
+                    //Rob: response.data rather than response, response.data is all I care about
                 }).catch(err=>{
                     this.setError(err)
                 })
@@ -78,30 +82,45 @@
             setError(message) {
                 console.log(message);
                 // TODO: Format the error
-                let errorText = `Uh oh! Looks like we had an error retrieving your weather data. Here is the error: ${message}`
-                this.testResults.innerHTML = (errorText || '').toString();
+                let errorText = `<div class="data-container">
+                                    <div class="data">
+                                        <h1>Uh oh! Looks like we had an error retrieving your weather data. Here is the error: ${message}</h1>
+                                    </div>
+                                 </div`
+                this.testResults.innerHTML = (errorText || '');
+                //Rob: got rid of the .toString() since we're directly giving it html
+
             }
 
             setResults(results) {
                 console.log(results)
                 // TODO: Format the results
                 let temp = ((results.main.temp-273.15)*1.8+32).toFixed(2);
+                //Rob converting Kelvin to Fahrenheit
 
                 let htmlData = `<div class="data-container">
-                                <div class="data city"><h1>City: ${results.name? results.name: "Brentwood"}</h1></div>
-                                <div class="data temp"><h2>Temperature: ${temp} Fahrenheit</h2></div>
-                                <div class="data weather"><h2>Weather: ${results.weather[0].main}</h2></div>
+                                    <div class="data city"><h1>City: ${results.name? results.name: "Brentwood"}</h1></div>
+                                    <div class="data temp"><h2>Temperature: ${temp} Fahrenheit</h2></div>
+                                    <div class="data weather"><h2>Weather: ${results.weather[0].main}</h2></div>
                                 </div>`
-                this.testResults.innerHTML = (htmlData || '');
-                //Rob: got rid of the .toString(); and used JSON.stringify instead to display the object on the DOM
+
+                //Rob: displaying our data
                 
-                if (results.weather[0].description.includes('cloud')) {
+                this.testResults.innerHTML = (htmlData || '');
+                //Rob: got rid of the .toString() since we're directly giving it html
+                
+
+                //Rob: this next bit just shows a different background based on the weather.
+
+                let description = results.weather[0].description
+
+                if (description.includes('cloud')) {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/209831/pexels-photo-209831.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260")'
-                } else if (results.weather[0].description.includes('snow')) {
+                } else if (description.includes('snow')) {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/839462/pexels-photo-839462.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260")'
-                } else if (results.weather[0].description.includes('storm')) {
+                } else if (description.includes('storm')) {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/53459/lightning-storm-weather-sky-53459.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
-                } else if (results.weather[0].description.includes('rain')) {
+                } else if (description.includes('rain')) {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/53459/lightning-storm-weather-sky-53459.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
                 } else {
                     document.getElementsByClassName('data-container')[0].style.backgroundImage='url("https://images.pexels.com/photos/3768/sky-sunny-clouds-cloudy.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")'
@@ -172,6 +191,7 @@
             background-color: #006000;
         }
 
+        /* Rob: animations for our data */
         @keyframes fade-in-and-scale {
             0% {
                 opacity: 0;
@@ -229,6 +249,8 @@
 
         addButtonForTest(buttonContainer, test);
 
+
+        //Rob: below are options, success function, and error function for getting user geolocation. I wanted this to happen on page load, so that is why the function is being called down here.
         let options = {
             enableHighAccuracy: true,
             timeout: 5000,
@@ -240,16 +262,14 @@
                 latitude: pos.coords.latitude,
                 longitude: pos.coords.longitude
             }
-            console.log('Your current position is:');
-            console.log(`Latitude : ${crd.latitude}`);
-            console.log(`Longitude: ${crd.longitude}`);
-            // console.log(`More or less ${crd.accuracy} meters.`);
             localStorage.setItem("currentPosition", JSON.stringify(crd));
+            //Rob: setting current position to local storage
         }
 
         function error(err) {
             console.warn(`ERROR(${err.code}): ${err.message}`);
-            // localStorage.setItem("currentPosition", JSON.stringify({city: "Brentwood"}))
+            localStorage.clear();
+            //Rob: clearing local storage so axios url works correctly
         }
 
 
