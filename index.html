@@ -141,7 +141,7 @@
             text-align: center;
             animation: fade-in 1s ease;
             border-radius: 15px;
-            box-shadow: 1px 1px 5px 1px black;
+            box-shadow: 1px 1px 5px 1px black inset;
         }
         .data-container > .data {
             height: 33.3%;
@@ -195,11 +195,14 @@
         @keyframes fade-in-and-scale {
             0% {
                 opacity: 0;
-                transform: scale(0)
+                transform: scale(0);
+                background-position: -100px 0px;
+
             }
             100% {
                 opacity: 1;
-                transform: scale(1)
+                transform: scale(1);
+                background-position: 0px -100px;
             }
         }
         @keyframes fade-in {
@@ -235,7 +238,7 @@
 
             testButton.type = 'button';
             testButton.innerText = 'Get Your Current Weather!';
-            //Rob: felt like Brentwood was more accurate than Nashville
+            //Rob: felt like this was more accurate than Nashville
             testButton.onclick = () => test.run();
 
             context.appendChild(testButton);
@@ -274,7 +277,7 @@
 
 
         navigator.geolocation.getCurrentPosition(success, error, options);
-        console.log(`Dear Hiring Manager/Senior Dev/Whoever, thanks for taking a look at my coding test. If all is going to plan, the page should ask for your location then show either your weather or Brentwood's depending on what you chose. If you want to see the weather in Brentwood, you may have to clear local storage if you've already allowed geolocation. Any questions, concerns? My contact info is on my github as well as in my application. Thanks! - Rob`)
+        console.log(`Dear Hiring Manager/Senior Dev/Whoever, thanks for taking a look at my coding test. If all is going to plan, the page should ask for your location then show either your weather or Brentwood's depending on what you chose. Any questions, concerns? My contact info is on my github as well as in my application. Thanks! - Rob`)
 
     </script>
 </body>
